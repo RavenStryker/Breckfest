@@ -4,8 +4,12 @@
 
 A drag'n'drop image converter for Wreckfest.
 
-v1.6.0 released 2021-05-21  
-Download binary [here](https://www.toxic-ragers.co.uk/files/tools/breckfest/Breckfest.v1.6.0.zip) (35.1KB)
+v1.6.1 released 2025-02-03
+Download v1.6.1 binary [here](https://github.com/RavenStryker/Breckfest/releases/tag/Release)
+Download v1.6.0 binary [here](https://www.toxic-ragers.co.uk/files/tools/breckfest/Breckfest.v1.6.0.zip) (35.1KB)
+Download v1.5.0 binary [here](https://www.toxic-ragers.co.uk/files/tools/breckfest/Breckfest.v1.5.0.zip)
+Download v1.4.0 binary [here](https://www.toxic-ragers.co.uk/files/tools/breckfest/Breckfest.v1.4.0.zip)
+Download v1.3.0 binary [here](https://www.toxic-ragers.co.uk/files/tools/breckfest/Breckfest.v1.3.0.zip)
 
 How to use:  
 Drop a bmap on Breckfest.exe to get a png file.  
