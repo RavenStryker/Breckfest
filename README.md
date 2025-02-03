@@ -1,4 +1,4 @@
-**Breckfest v1.6.0**
+**Breckfest v1.6.1**
 
 ![alt text](http://www.toxic-ragers.co.uk/images/misc/breckfest.png "Breckfest")
 
@@ -41,9 +41,12 @@ Filename.dxt1.png will be processed as -dxt1 and saved as Filename.x.bmap
 Filename.dxt5.png will be processed as -dxt5 and saved as Filename.x.bmap  
 And so on
 
-**Changelog**
+**Changelog**  
+**v1.6.1**  
+Updated DDS.cs so that it can properly handle decompressing _n files from Wreckfest to .tga, .png or .dds and the color output is accurate.  
+Made changed so that .tga, .png and .dds can all be decompressed through the command line. Also made them compatible with the -norename/-nr flag so when decompressing you can have the files keep the compressed naming format.  
 
-**v1.6.0**
+**v1.6.0**  
 Added -norename based on work by [talberti](https://github.com/talberti)  
 Added -dds  
 Updated LibSquishNet to the super speedy v2.0.0  
