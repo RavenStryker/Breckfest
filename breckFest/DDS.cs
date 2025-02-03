@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
-
 using Squish;
 
 namespace breckFest
@@ -21,9 +20,9 @@ namespace breckFest
 
     public enum PixelFormatFourCC
     {
-        DXT1 = 0x31545844,  // MakeFourCC('D', 'X', 'T', '1')
-        DXT3 = 0x33545844,  // MakeFourCC('D', 'X', 'T', '3')
-        DXT5 = 0x35545844   // MakeFourCC('D', 'X', 'T', '5')
+        DXT1 = 0x31545844,
+        DXT3 = 0x33545844,
+        DXT5 = 0x35545844
     }
 
     [Flags]
@@ -61,17 +60,11 @@ namespace breckFest
     public class DDSPixelFormat
     {
         public PixelFormatFlags Flags { get; set; }
-
         public PixelFormatFourCC FourCC { get; set; }
-
         public int RGBBitCount { get; set; }
-
         public uint RBitMask { get; set; }
-
         public uint GBitMask { get; set; }
-
         public uint BBitMask { get; set; }
-
         public uint ABitMask { get; set; }
     }
 
@@ -91,27 +84,16 @@ namespace breckFest
         }
 
         public HeaderFlags Flags { get; set; }
-
         public int Height { get; set; }
-
         public int Width { get; set; }
-
         public int Pitch { get; set; }
-
         public int Depth { get; set; } = 0;
-
         public DDSPixelFormat PixelFormat { get; set; }
-
         public DDSCaps Caps { get; set; }
-
         public DDSCaps2 Caps2 { get; set; }
-
         public string Name { get; set; }
-
         public string Extension { get; } = "dds";
-
         public List<MipMap> MipMaps { get; set; } = new List<MipMap>();
-
         public D3DFormat Format { get; set; }
 
         public DDS() { }
@@ -126,15 +108,12 @@ namespace breckFest
                 case D3DFormat.DXT1:
                     flags = SquishFlags.kDxt1;
                     break;
-
                 case D3DFormat.DXT3:
                     flags = SquishFlags.kDxt3;
                     break;
-
                 case D3DFormat.DXT5:
                     flags = SquishFlags.kDxt5;
                     break;
-
                 default:
                     compressed = false;
                     break;
@@ -152,7 +131,8 @@ namespace breckFest
 
             byte[] data = new byte[mip.Width * mip.Height * 4];
 
-            BitmapData bmpdata = bitmap.LockBits(new Rectangle(0, 0, mip.Width, mip.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            BitmapData bmpdata = bitmap.LockBits(new Rectangle(0, 0, mip.Width, mip.Height),
+                ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             Marshal.Copy(bmpdata.Scan0, data, 0, bmpdata.Stride * bmpdata.Height);
             bitmap.UnlockBits(bmpdata);
 
@@ -220,7 +200,8 @@ namespace breckFest
                 {
                     dds.Format = (D3DFormat)dds.PixelFormat.FourCC;
                 }
-                else if (dds.PixelFormat.Flags.HasFlag(PixelFormatFlags.DDPF_RGB) & dds.PixelFormat.Flags.HasFlag(PixelFormatFlags.DDPF_ALPHAPIXELS))
+                else if (dds.PixelFormat.Flags.HasFlag(PixelFormatFlags.DDPF_RGB) &&
+                         dds.PixelFormat.Flags.HasFlag(PixelFormatFlags.DDPF_ALPHAPIXELS))
                 {
                     dds.Format = D3DFormat.A8R8G8B8;
                 }
@@ -238,13 +219,12 @@ namespace breckFest
                         case D3DFormat.A8R8G8B8:
                             mip.Data = br.ReadBytes(mip.Width * mip.Height * 4);
                             break;
-
                         case D3DFormat.DXT1:
                             mip.Data = br.ReadBytes((((mip.Width + 3) / 4) * ((mip.Height + 3) / 4)) * 8);
                             break;
-
                         case D3DFormat.DXT3:
                         case D3DFormat.DXT5:
+                        case D3DFormat.ATI2:
                             mip.Data = br.ReadBytes((((mip.Width + 3) / 4) * ((mip.Height + 3) / 4)) * 16);
                             break;
                     }
@@ -262,7 +242,7 @@ namespace breckFest
                 br.ReadByte() == 0x44 && // D
                 br.ReadByte() == 0x44 && // D
                 br.ReadByte() == 0x53 && // S
-                br.ReadByte() == 0x20    //  
+                br.ReadByte() == 0x20    //
             );
         }
 
@@ -298,8 +278,10 @@ namespace breckFest
                 case D3DFormat.DXT1:
                 case D3DFormat.DXT3:
                 case D3DFormat.DXT5:
+                case D3DFormat.ATI2:
                     bw.Write(4);        // fourCC length
-                    bw.Write(dds.Format.ToString().ToCharArray());
+                    char[] fourCC = dds.Format.ToString().ToCharArray();
+                    bw.Write(fourCC);
                     bw.Write(0);
                     bw.Write(0);
                     bw.Write(0);
@@ -334,6 +316,12 @@ namespace breckFest
         {
             MipMap mip = MipMaps[mipLevel];
 
+            if (Format == D3DFormat.ATI2)
+            {
+                return DecompressATI2(mip, suppressAlpha);
+            }
+
+            // Use fully qualified PixelFormat to avoid ambiguity.
             Bitmap b = new Bitmap(mip.Width, mip.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             SquishFlags flags = 0;
             bool notCompressed = false;
@@ -343,15 +331,12 @@ namespace breckFest
                 case D3DFormat.DXT1:
                     flags = SquishFlags.kDxt1;
                     break;
-
                 case D3DFormat.DXT5:
                     flags = SquishFlags.kDxt5;
                     break;
-
                 case D3DFormat.A8R8G8B8:
                     notCompressed = true;
                     break;
-
                 default:
                     throw new NotImplementedException($"Can't decompress: {Format}");
             }
@@ -365,10 +350,10 @@ namespace breckFest
                 {
                     uint colour = (uint)((data[i + 3] << 24) | (data[i + 2] << 16) | (data[i + 1] << 8) | (data[i + 0] << 0));
 
-                    dest[i + 0] = (byte)((colour & PixelFormat.BBitMask) >> 0);
-                    dest[i + 1] = (byte)((colour & PixelFormat.GBitMask) >> 8);
-                    dest[i + 2] = (byte)((colour & PixelFormat.RBitMask) >> 16);
-                    dest[i + 3] = (byte)((colour & PixelFormat.ABitMask) >> 24);
+                    dest[i + 0] = (byte)(colour & 0x000000FF);
+                    dest[i + 1] = (byte)((colour & 0x0000FF00) >> 8);
+                    dest[i + 2] = (byte)((colour & 0x00FF0000) >> 16);
+                    dest[i + 3] = (byte)((colour & 0xFF000000) >> 24);
                 }
             }
             else
@@ -383,20 +368,128 @@ namespace breckFest
                 }
             }
 
-            BitmapData bmpdata = b.LockBits(new Rectangle(0, 0, mip.Width, mip.Height), ImageLockMode.ReadWrite, (suppressAlpha ? System.Drawing.Imaging.PixelFormat.Format32bppRgb : b.PixelFormat));
+            BitmapData bmpdata = b.LockBits(new Rectangle(0, 0, mip.Width, mip.Height),
+                ImageLockMode.WriteOnly, (suppressAlpha ? System.Drawing.Imaging.PixelFormat.Format32bppRgb : b.PixelFormat));
             Marshal.Copy(dest, 0, bmpdata.Scan0, dest.Length);
             b.UnlockBits(bmpdata);
 
             return b;
+        }
+
+        private Bitmap DecompressATI2(MipMap mip, bool suppressAlpha)
+        {
+            int width = mip.Width;
+            int height = mip.Height;
+            // Create output bitmap using fully qualified PixelFormat.
+            Bitmap b = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            byte[] dest = new byte[width * height * 4];
+
+            int blocksX = (width + 3) / 4;
+            int blocksY = (height + 3) / 4;
+            byte[] blockData = mip.Data;
+
+            // Loop over each 4x4 block.
+            for (int by = 0; by < blocksY; by++)
+            {
+                for (int bx = 0; bx < blocksX; bx++)
+                {
+                    int blockIndex = (by * blocksX + bx) * 16;
+                    // Each block: first 8 bytes and second 8 bytes.
+                    // We'll use the first 8 bytes as one channel and the second 8 bytes as the other.
+                    // Based on our testing, treating the first block as green and the second as red gives better results.
+                    byte[] block1 = new byte[8];
+                    byte[] block2 = new byte[8];
+                    Array.Copy(blockData, blockIndex, block1, 0, 8);
+                    Array.Copy(blockData, blockIndex + 8, block2, 0, 8);
+
+                    byte[] redValues = new byte[16];
+                    byte[] greenValues = new byte[16];
+
+                    // Decode both blocks using your DXT5 alpha block decompression routine.
+                    DecompressDXT5AlphaBlock(block2, redValues);   // Use second block for red.
+                    DecompressDXT5AlphaBlock(block1, greenValues);   // Use first block for green.
+
+                    // Process each pixel in the 4x4 block.
+                    for (int j = 0; j < 16; j++)
+                    {
+                        int x = bx * 4 + (j % 4);
+                        int y = by * 4 + (j / 4);
+                        if (x < width && y < height)
+                        {
+                            // Normalize the values assuming 128 is neutral:
+                            double xNorm = (greenValues[j] - 128) / 127.0;  // x from green block
+                            double yNorm = (redValues[j] - 128) / 127.0;      // y from red block
+                            double zNorm = Math.Sqrt(Math.Max(0, 1 - xNorm * xNorm - yNorm * yNorm));
+
+                            // Remap normalized values back to [0,255]:
+                            byte rOut = (byte)(xNorm * 127 + 128);   // computed red value
+                            byte gOut = (byte)(yNorm * 127 + 128);   // computed green value
+                            byte bOut = (byte)(zNorm * 127 + 128);     // computed blue value
+
+                            int destIndex = (y * width + x) * 4;
+                            // Here, swap the red and blue output so that a neutral normal becomes (128,128,255)
+                            dest[destIndex + 0] = bOut;  // assign computed blue to red channel
+                            dest[destIndex + 1] = gOut;  // green remains the same
+                            dest[destIndex + 2] = rOut;  // assign computed red to blue channel
+                            dest[destIndex + 3] = 255;
+                        }
+                    }
+                }
+            }
+
+            BitmapData bmpdata = b.LockBits(new Rectangle(0, 0, width, height),
+                System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            Marshal.Copy(dest, 0, bmpdata.Scan0, dest.Length);
+            b.UnlockBits(bmpdata);
+
+            return b;
+        }
+
+
+        private static void DecompressDXT5AlphaBlock(byte[] block, byte[] output)
+        {
+            byte alpha0 = block[0];
+            byte alpha1 = block[1];
+
+            ulong indices = 0;
+            for (int i = 0; i < 6; i++)
+            {
+                indices |= ((ulong)block[i + 2]) << (8 * i);
+            }
+
+            byte[] alphas = new byte[8];
+            alphas[0] = alpha0;
+            alphas[1] = alpha1;
+            if (alpha0 > alpha1)
+            {
+                for (int i = 1; i < 7; i++)
+                {
+                    alphas[i + 1] = (byte)(((8 - i) * alpha0 + i * alpha1) / 8);
+                }
+            }
+            else
+            {
+                for (int i = 1; i < 5; i++)
+                {
+                    alphas[i + 1] = (byte)(((6 - i) * alpha0 + i * alpha1) / 6);
+                }
+                alphas[6] = 0;
+                alphas[7] = 255;
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                int index = (int)(indices & 0x7);
+                indices >>= 3;
+                output[i] = alphas[index];
+            }
         }
     }
 
     public class MipMap
     {
         public int Width { get; set; }
-
         public int Height { get; set; }
-
         public byte[] Data { get; set; }
     }
 }
