@@ -5,7 +5,7 @@
 A drag'n'drop image converter for Wreckfest.
 
 v1.6.2 released 2025-02-25  
-Download v1.6.2 binary [here](https://github.com/RavenStryker/Breckfest/releases/tag/1.6.2).
+Download v1.6.2 binary [here](https://github.com/RavenStryker/Breckfest/releases/tag/1.6.2)  
 Download v1.6.1 binary [here](https://github.com/RavenStryker/Breckfest/releases/tag/1.6.1)  
 Download v1.6.0 binary [here](https://www.toxic-ragers.co.uk/files/tools/breckfest/Breckfest.v1.6.0.zip)  
 Download v1.5.0 binary [here](https://www.toxic-ragers.co.uk/files/tools/breckfest/Breckfest.v1.5.0.zip)  
