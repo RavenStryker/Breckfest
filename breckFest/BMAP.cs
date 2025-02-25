@@ -141,7 +141,7 @@ namespace breckFest
                         TGA.FromBitmap(DDS.Decompress()).Save(path);
                         break;
                 }
-                
+
             }
             else
             {

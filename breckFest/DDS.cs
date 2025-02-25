@@ -198,7 +198,16 @@ namespace breckFest
 
                 if (dds.PixelFormat.Flags.HasFlag(PixelFormatFlags.DDPF_FOURCC))
                 {
-                    dds.Format = (D3DFormat)dds.PixelFormat.FourCC;
+                    uint fourCC = (uint)dds.PixelFormat.FourCC;
+                    // Map older BC5U files (1429553986) to ATI2 for backward compatibility.
+                    if (fourCC == 1429553986) // "BC5U"
+                    {
+                        dds.Format = D3DFormat.ATI2;
+                    }
+                    else
+                    {
+                        dds.Format = (D3DFormat)fourCC;
+                    }
                 }
                 else if (dds.PixelFormat.Flags.HasFlag(PixelFormatFlags.DDPF_RGB) &&
                          dds.PixelFormat.Flags.HasFlag(PixelFormatFlags.DDPF_ALPHAPIXELS))
