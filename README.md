@@ -43,6 +43,12 @@ Filename.dxt5.png will be processed as -dxt5 and saved as Filename.x.bmap
 And so on
 
 **Changelog**  
+**v1.6.2**  
+Fix backward compatibility for older BC5U files (2018 Normal Maps)  
+- Detect BC5U (FourCC value 1429553986) in DDS loading and map it to ATI2.  
+- Update conditional block in DDS.Load to explicitly cast PixelFormatFourCC to uint.  
+- This change enables proper decompression of legacy 2018 files using ATI2 logic.  
+
 **v1.6.1**  
 Updated DDS.cs so that it can properly handle decompressing _n files from Wreckfest to .tga, .png or .dds and the color output is accurate.  
 Made changed so that .tga, .png and .dds can all be decompressed through the command line. Also made them compatible with the -norename/-nr flag so when decompressing you can have the files keep the compressed naming format.  
